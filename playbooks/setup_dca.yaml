@@ -1,0 +1,14 @@
+- name: Install DCA Application
+  hosts: all
+  become: true
+  tasks:
+    - name: Install public Docker Container from GitHub Container Registry
+      community.docker.docker_container:
+        name: dca
+        image: ghcr.io/wolfpaulus/dca:latest
+        labels:
+          com.centurylinklabs.watchtower.enable: "true"
+        state: started
+        restart_policy: unless-stopped
+        published_ports:
+          - "8000:8000" # host port : container port

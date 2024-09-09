@@ -1,0 +1,24 @@
+- name: Install Watchtower
+  hosts: all
+  become: true
+  vars:
+    poll_interval: 600 # polling interval in seconds (10 minutes)
+  tasks:
+    - name: Install Watchtower
+      community.docker.docker_container:
+        name: watchtower
+        image: containrrr/watchtower
+        labels:
+          com.centurylinklabs.watchtower.enable: "true"
+        state: started
+        restart_policy: unless-stopped
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+        env:
+          TZ: "{{ timezone }}"
+          WATCHTOWER_POLL_INTERVAL: "600" # polling interval in seconds
+          WATCHTOWER_CLEANUP: "true" # remove old images after updating
+          WATCHTOWER_INCLUDE_STOPPED: "true" # monitor (and updatye) stopped containers
+          WATCHTOWER_INCLUDE_RESTARTING: "true"
+          WATCHTOWER_LABEL_ENABLE: "1" # monitor only containers with the enable label set to true: com.centurylinklabs.watchtower.enable
+          WATCHTOWER_DEBUG: "true"

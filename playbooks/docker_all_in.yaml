@@ -1,0 +1,11 @@
+#
+# Running the playbooks in sequence
+#
+- name: Running the playbook setting the time zone
+  ansible.builtin.import_playbook: set_timezone.yaml
+- name: Running the playbook installing docker etc
+  ansible.builtin.import_playbook: setup_docker.yaml
+- name: Runningun the playbook installing portainer
+  ansible.builtin.import_playbook: setup_portainer.yaml
+- name: Runningun the playbook installing watchtower
+  ansible.builtin.import_playbook: setup_watchtower.yaml

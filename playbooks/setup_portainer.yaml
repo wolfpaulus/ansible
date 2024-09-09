@@ -1,0 +1,19 @@
+- name: Install Portainer
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Portainer
+      community.docker.docker_container:
+        name: portainer
+        image: portainer/portainer-ce
+        labels:
+          com.centurylinklabs.watchtower.enable: "true"
+        state: started
+        restart_policy: unless-stopped
+        published_ports:
+          - "9000:9000"
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - /portainer_data:/data
+          - /etc/localtime:/etc/localtime:ro
+          - /etc/timezone:/etc/timezone:ro

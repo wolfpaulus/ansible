@@ -11,4 +11,3 @@ ansible-galaxy collection install -r ./requirements.yaml
     `deb [arch=arm64] https://download.docker.com/linux/ubuntu noble stable` instead of `deb [arch=aarch64] https://download.docker.com/linux/ubuntu noble stable` into /etc/apt/sources.list.d/docker.list
 1. setup_watchtower
 1. setup_portainer
-

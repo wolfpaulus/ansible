@@ -1,0 +1,5 @@
+.venv/
+/archive/
+/collections/
+.vscode/
+.DS_Store
