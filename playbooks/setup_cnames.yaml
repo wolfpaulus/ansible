@@ -1,0 +1,10 @@
+- name: Setup CNAMES
+  hosts: gamma
+  become: true
+  tasks:
+    - name: Create CNAMES for the tunnel. # put newest first
+      ansible.builtin.shell: |
+        cloudflared tunnel route dns "{{ tunnel_id }}" ssh-gamma
+        cloudflared tunnel route dns "{{ tunnel_id }}" gamma
+      register: my_output
+      changed_when: my_output.rc != 0

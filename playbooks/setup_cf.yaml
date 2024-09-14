@@ -1,0 +1,80 @@
+- name: Install cloudflared
+  hosts: gamma
+  become: true
+  tasks:
+    - name: Download the cloudflared Linux package
+      ansible.builtin.get_url:
+        url: https://github.com/cloudflare/cloudflared/releases/latest/download/{{ cloudflared_pkg }}
+        dest: /tmp/{{ cloudflared_pkg }}
+        mode: "0440"
+
+    - name: Depackage cloudflared
+      ansible.builtin.shell: |
+        sudo dpkg -i /tmp/{{ cloudflared_pkg }}
+        mkdir -p /etc/cloudflared/
+      register: result
+      changed_when: result.rc != 0
+
+    - name: Create the config file for cloudflared and define the ingress rules for the tunnel
+      ansible.builtin.copy:
+        dest: "/etc/cloudflared/config.yml"
+        content: |
+          tunnel: {{ tunnel_id }}
+          credentials-file: /etc/cloudflared/cred.json
+          logfile: /var/log/cloudflared.log
+          loglevel: warn
+          ingress: # ingress rules for the tunnel
+            - hostname: ssh-{{ hostname }}  # CNAME ssh-{hostname} needs to be configured in Cloudflare/DNS
+              service: ssh://localhost:22   # must be proxied using cloudflared on the client
+            - hostname: {{ hostname }}
+              service: http://localhost:8000 # http service 8000 -> 443
+            - service: http_status:404
+        mode: "0440"
+
+    - name: Create the certificate file for cloudflared.
+      ansible.builtin.copy:
+        src: "{{ tunnel_cert }}"
+        dest: "/etc/cloudflared/cert.pem"
+        mode: "0440"
+
+    - name: Create the credentials file for cloudflared.
+      ansible.builtin.copy:
+        dest: "/etc/cloudflared/cred.json"
+        content: |
+          {
+            "AccountTag"   : "{{ account_tag | quote }}",
+            "TunnelID"     : "{{ tunnel_id | quote }}",
+            "TunnelName"   : "{{ tunnel_name | quote }}",
+            "TunnelSecret" : "{{ tunnel_secret | quote }}"
+          }
+        mode: "0440"
+
+    - name: Install the tunnel as a systemd service.
+      block:
+        - name: Install the tunnel as a systemd service
+          ansible.builtin.shell: |
+            cloudflared service install
+          register: my_output # <- Registers the command output.
+          changed_when: my_output.rc != 0 # <- Uses the return code to define when the task has changed.
+      rescue:
+        - name: Print when errors
+          ansible.builtin.debug:
+            msg: "service installation failed, already installed?"
+
+    - name: Create CNAMES for the tunnel
+      ansible.builtin.shell: |
+        cloudflared tunnel route dns "{{ tunnel_id }}" {{ tunnel_name }}
+      register: my_output # <- Registers the command output.
+      changed_when: my_output.rc != 0 # <- Uses the return code to define when the task has changed.
+
+    - name: Increase the maximum receive buffer size.
+      ansible.posix.sysctl:
+        name: net.core.rmem_max
+        value: 2500000
+        state: present
+        reload: true
+
+    - name: Start the tunnel.
+      ansible.builtin.service:
+        name: cloudflared
+        state: restarted

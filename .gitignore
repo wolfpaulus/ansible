@@ -3,3 +3,5 @@
 /collections/
 .vscode/
 .DS_Store
+*.cert
+hosts.yaml
