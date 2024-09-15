@@ -4,7 +4,7 @@
   tasks:
     - name: Create CNAMES for the tunnel. # put newest first
       ansible.builtin.shell: |
-        cloudflared tunnel route dns "{{ tunnel_id }}" ssh-gamma
-        cloudflared tunnel route dns "{{ tunnel_id }}" gamma
+        cloudflared tunnel route dns "{{ tunnel_id }}" ssh-{{ hostname.split('.')[0] }}
+        cloudflared tunnel route dns "{{ tunnel_id }}" {{ hostname.split('.')[0] }}
       register: my_output
       changed_when: my_output.rc != 0

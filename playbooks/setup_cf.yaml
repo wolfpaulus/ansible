@@ -63,7 +63,8 @@
 
     - name: Create CNAMES for the tunnel
       ansible.builtin.shell: |
-        cloudflared tunnel route dns "{{ tunnel_id }}" {{ tunnel_name }}
+        cloudflared tunnel route dns "{{ tunnel_id }}" ssh-{{ hostname.split('.')[0] }}
+        cloudflared tunnel route dns "{{ tunnel_id }}" {{ hostname.split('.')[0] }}
       register: my_output # <- Registers the command output.
       changed_when: my_output.rc != 0 # <- Uses the return code to define when the task has changed.
 
