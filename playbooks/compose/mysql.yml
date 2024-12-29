@@ -1,0 +1,16 @@
+# This Ansible playbook deploys a MySQL database container using Docker Compose.
+services: # This Docker Compose YAML deploys a MySQL database container.
+  mysql_db:
+    container_name: mysql-db # Name of the container
+    image: mysql # Official MySQL image from Docker Hub
+    network_mode: host # Container uses host's network directly
+    hostname: localhost
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_HOST="%" # Allow connections from any host
+      - MYSQL_ROOT_PASSWORD={{ mysql_root_pw }}
+      - MYSQL_DATABASE={{ mysql_db }}
+      - MYSQL_USER={{ mysql_user }}
+      - MYSQL_PASSWORD={{ mysql_pw }}
+    volumes:
+      - ./volumes/mysql-mnt:/var/lib/mysql    

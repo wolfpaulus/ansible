@@ -1,0 +1,17 @@
+# Description: This playbook is used to setup the MySQL database for the beta host.
+# Keep in mind that connecting to the datebase remotely, requires the use of cloudflared.
+# E.g.: execute this on the client machine:
+# `cloudflared access tcp --hostname mysql.techcasitaproductions.com --url localhost:3306`
+- name: Setup mysql_db
+  hosts: beta
+  become: true
+  tasks:
+    - name: Copy Docker Compose files
+      ansible.builtin.template: # using Ansible's template modules instead of copy!
+        src: ./compose/mysql.yml
+        dest: ./docker-compose.yml
+    - name: Start docker compose project
+      community.docker.docker_compose_v2:
+        project_src: ./
+        files:
+          - docker-compose.yml

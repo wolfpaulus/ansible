@@ -1,3 +1,4 @@
+# Description: Set timezone on all hosts
 - name: Set timezone
   hosts: all
   become: true

@@ -1,5 +1,6 @@
+# Description: This playbook installs the DCA application on the alpha host.
 - name: Install DCA Application
-  hosts: all
+  hosts: alpha
   become: true
   tasks:
     - name: Install public Docker Container from GitHub Container Registry

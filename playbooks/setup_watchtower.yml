@@ -1,3 +1,4 @@
+# Description: Install Watchtower to automatically update Docker containers
 - name: Install Watchtower
   hosts: all
   become: true

@@ -1,7 +1,8 @@
+.ansible/
 .venv/
 /archive/
 /collections/
 .vscode/
 .DS_Store
 *.cert
-hosts.yaml
+hosts.yml

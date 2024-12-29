@@ -1,0 +1,56 @@
+# Description: This playbook sets up the ingress rules for the tunnels.
+# This playbook should be run after the setup_cnames and setup_cloudflare playbooks.
+
+- name: Setup ingress rules for the alpha tunnel.
+  hosts: alpha
+  become: true
+  tasks:
+    - name: Create the config file for cloudflared and define the ingress rules for the alpha tunnel
+      ansible.builtin.copy:
+        dest: "/etc/cloudflared/config.yml"
+        content: |
+          tunnel: {{ tunnel_id }}
+          credentials-file: /etc/cloudflared/cred.json
+          logfile: /var/log/cloudflared.log
+          loglevel: warn
+          ingress: # ingress rules for the tunnel
+            - hostname: ssh-{{ hostname }}  # CNAME ssh-{hostname} needs to be configured in Cloudflare/DNS
+              service: ssh://localhost:22   # must be proxied using cloudflared on the client
+            - hostname: wordgame.{{ domain }}
+              service: http://localhost:8001 # wordgame server 8001 -> 443
+            - hostname: dca.{{ domain }}
+              service: http://localhost:8000 # dollar cost avg server 8000 -> 443            
+            - hostname: {{ hostname }} # default
+              service: http://localhost:8000 # http service 8000 -> 443
+            - service: http_status:404
+        mode: "0440"
+
+    - name: Start the tunnel.
+      ansible.builtin.service:
+        name: cloudflared
+        state: restarted  
+
+- name: Setup ingress rules for the beta tunnel.
+  hosts: beta
+  become: true
+  tasks:
+    - name: Create the config file for cloudflared and define the ingress rules for the beta tunnel
+      ansible.builtin.copy:
+        dest: "/etc/cloudflared/config.yml"
+        content: |
+          tunnel: {{ tunnel_id }}
+          credentials-file: /etc/cloudflared/cred.json
+          logfile: /var/log/cloudflared.log
+          loglevel: warn
+          ingress: # ingress rules for the tunnel
+            - hostname: ssh-{{ hostname }}  # CNAME ssh-{hostname} needs to be configured in Cloudflare/DNS
+              service: ssh://localhost:22   # must be proxied using cloudflared on the client
+            - hostname: mysql.{{ domain }}
+              service: tcp://localhost:3306 # must be proxied using cloudflared on the client
+            - service: http_status:404
+        mode: "0440"
+
+    - name: Start the tunnel.
+      ansible.builtin.service:
+        name: cloudflared
+        state: restarted        

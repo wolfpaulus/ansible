@@ -1,0 +1,22 @@
+#
+# Running the playbooks in sequence
+#
+
+- name: Running the playbook setting the time zone
+  ansible.builtin.import_playbook: set_timezone.yml
+- name: Running the playbook installing docker etc
+  ansible.builtin.import_playbook: setup_docker.yml
+- name: Running the playbook installing portainer
+  ansible.builtin.import_playbook: setup_portainer.yml
+- name: Running the playbook installing watchtower
+  ansible.builtin.import_playbook: setup_watchtower.yml
+
+## Service specific playbooks
+
+
+
+## App specific playbooks 
+- name: Running the playbook installing dca on alpha
+  ansible.builtin.import_playbook: setup_app_dca.yml
+- name: Running the playbook installing wordgame on alpha
+  ansible.builtin.import_playbook: setup_app_wordgame.yml

@@ -1,3 +1,4 @@
+# Description: This playbook is used to install Portainer on the target host.
 - name: Install Portainer
   hosts: all
   become: true
