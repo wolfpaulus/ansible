@@ -3,6 +3,8 @@ services: # This Docker Compose YAML deploys a MySQL database container.
   mysql_db:
     container_name: mysql-db # Name of the container
     image: mysql # Official MySQL image from Docker Hub
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
     network_mode: host # Container uses host's network directly
     hostname: localhost
     restart: unless-stopped
