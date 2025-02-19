@@ -1,5 +1,13 @@
 # Description: This playbook installs cloudflared, tunnel credentials, and certificates on the hosts.
-# This should be run after the setup_cnames.yml playbook.
+# PLEASE NOTE: Before running this playbook, you need to have the following variables defined in your inventory file: 
+# account_tag, cloudflared_pkg, tunnel_cert, tunnel_name, tunnel_id, and tunnel_secret.
+# Credentials and certificates can easily be created on the `control host` and added to the playbooks/certificates folder for deployment. E.g.:
+# - brew install cloudflared
+# - cloudflared tunnel login
+# - cp /Users/wolf/.cloudflared/cert.pem ./playbooks/certificates/gamma_tunnel.cert
+# - cloudflared tunnel create gamma
+# Check here for more details: https://wolfpaulus.com/flare
+# Since setup_cnams.yml requires that cloudflared is installed on the hosts, this playbook should be run before the setup_cnams.yml playbook.
 
 - name: Install cloudflared
   hosts: all

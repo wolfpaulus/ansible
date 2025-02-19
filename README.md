@@ -274,6 +274,9 @@ Running this playbook will
 
 on all hosts in the _hosts.yml_ file, and doing so in very little time.
 
+```shell
+ansible-playbook ./playbooks/docker_all_in.yml
+```
 ### DCA
 Here is another playbook: _setup_dca.yml_. This is a demo app that I install on all the hosts found in the hosts.yml file.  
 _DCA_ short for _Dollar Cost Average_ is a Github repo that comes with a pre-built docker image. This particular docker image is also a multi-platform image, built for the amd64 and arm64/v8 platforms. I.e., it can easly be deployed on "standard" X86 and Raspberry Pi 5 hardware.
@@ -281,3 +284,44 @@ _DCA_ short for _Dollar Cost Average_ is a Github repo that comes with a pre-bui
 ```shell
 ansible-playbook ./playbooks/setup_dca.yml
 ```
+
+## Limiting Ansible playbooks
+If a playbool is setup to run on all hosts, it can still be installed selectively, by creating a new inventory on the commandline. E.g.:
+
+```shell
+ansible-playbook ./playbooks/setup_dca.yml -i epsilon,
+```
+
+This would run the setup_dca.yml playbook on the epsilon host. Notice the comma at teh end! The inventory needs to be a list.
+
+# Cloudflare
+Follow the fist couple of steps [here](https://wolfpaulus.com/flare) to create _Tunnel Certificate_, _Name_, _ID_, and _Secret_
+E.g.:
+
+```shell
+cloudflared tunnel login
+..
+cp /Users/wolf/.cloudflared/cert.pem ./playbooks/certificates/epsilon_tunnel.cert
+cloudflared tunnel create epsilon
+```
+
+After adding the following key/value pairs to in host inventory:
+```yaml
+    epsilon: # RPi 0 2W BCM2710A1 Arm Cortex-A53 64bit CPU, 1GHz, 512MB RAM, ?? GB mSD, Ubuntu 24.04.1 LTS
+      #ansible_host: 192.168.200.13
+      hostname: epsilon.techcasitaproductions.com
+      architecture: arm64
+      cloudflared_pkg: cloudflared-linux-arm64.deb
+      tunnel_name: epsilon
+      tunnel_id: XT3g...
+      tunnel_secret: 66f9...
+      tunnel_cert: ./certificates/epsilon_tunnel.cert
+```
+
+The *setup_cnames* playbook is used to create the cnames on Cloudflare
+
+```shell
+ansible-playbook ./playbooks/setup_cnames.yml
+```
+
+followed by the *setup_cloudflare* playbook, which  
