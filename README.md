@@ -99,7 +99,15 @@ all:
       tunnel_secret: ...
       tunnel_cert: ./certificates/gamma_tunnel.cert
 
+    delta: # RPi 5 BCM2712 Arm Cortex-A76 64bit CPU, 2.4GHz, 16 GB RAM, 500 GB SSD, Ubuntu 24.04.1 LTS
+      hostname: delta.techcasitaproductions.com
+      architecture: arm64
+      tunnel_name: ...
+      tunnel_id: ...
+      tunnel_secret: ...
+      tunnel_cert: ./certificates/delta_tunnel.cert      
 ```
+
 I guess, by now, you already get the idea that Ansible does all its _"magic"_ via _ssh_. To make this all work, the hosts need to have [sshd](https://www.ssh.com/academy/ssh/sshd) installed and running. Moreover, the public key (id_rsa.pub), belonging to your id_rsa private key needs to be configured (in ~/.ssh/authorized_keys) on the remote hosts.
 
 ### Ansible Playbooks
@@ -153,16 +161,19 @@ TASK [Gathering Facts] *********************************************************
 ok: [alpha]
 ok: [gamma]
 ok: [beta]
+ok: [delta]
 
 TASK [Set tz] ******************************************************************
 ok: [alpha]
 ok: [gamma]
 ok: [beta]
+ok: [delta]
 
 PLAY RECAP *********************************************************************
 alpha                      : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 beta                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 gamma                      : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
+delta                      : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
 ```
 
 If not all hosts are in the same timezone, a new variable set on that host can override the global value:
@@ -182,9 +193,6 @@ all:
     
     beta:  # Intel Core i3-321 CPU, 1.8 GHz, 16 GB RAM, 128 GB SSD, Ubuntu 24.04.1 LTS
       hostname: beta.techcasitaproductions.com      
-
-    gamma: # Raspberry Pi 5 BCM2712 2.4GHz quad-core 64-bit Arm Cortex-A76 CPU, 8 GB RAM, 256 GB SSD
-      hostname: gamma.techcasitaproductions.com
 ```
 ### Playbooks
 
@@ -278,7 +286,7 @@ on all hosts in the _hosts.yml_ file, and doing so in very little time.
 ansible-playbook ./playbooks/docker_all_in.yml
 ```
 ### DCA
-Here is another playbook: _setup_dca.yml_. This is a demo app that I install on all the hosts found in the hosts.yml file.  
+Here is another playbook: _setup_dca.yml_. This is a demo app that I install on some hosts found in the hosts.yml file.  
 _DCA_ short for _Dollar Cost Average_ is a Github repo that comes with a pre-built docker image. This particular docker image is also a multi-platform image, built for the amd64 and arm64/v8 platforms. I.e., it can easly be deployed on "standard" X86 and Raspberry Pi 5 hardware.
 
 ```shell
@@ -292,7 +300,7 @@ If a playbool is setup to run on all hosts, it can still be installed selectivel
 ansible-playbook ./playbooks/setup_dca.yml -i epsilon,
 ```
 
-This would run the setup_dca.yml playbook on the epsilon host. Notice the comma at teh end! The inventory needs to be a list.
+This would run the setup_dca.yml playbook on the epsilon host. __Notice the comma at the end!__ The inventory needs to be a list.
 
 # Cloudflare
 Follow the fist couple of steps [here](https://wolfpaulus.com/flare) to create _Tunnel Certificate_, _Name_, _ID_, and _Secret_
@@ -307,21 +315,64 @@ cloudflared tunnel create epsilon
 
 After adding the following key/value pairs to in host inventory:
 ```yaml
-    epsilon: # RPi 0 2W BCM2710A1 Arm Cortex-A53 64bit CPU, 1GHz, 512MB RAM, ?? GB mSD, Ubuntu 24.04.1 LTS
-      #ansible_host: 192.168.200.13
-      hostname: epsilon.techcasitaproductions.com
-      architecture: arm64
-      cloudflared_pkg: cloudflared-linux-arm64.deb
-      tunnel_name: epsilon
-      tunnel_id: XT3g...
-      tunnel_secret: 66f9...
-      tunnel_cert: ./certificates/epsilon_tunnel.cert
+epsilon: 
+  hostname: epsilon.techcasitaproductions.com
+  architecture: arm64
+  cloudflared_pkg: cloudflared-linux-arm64.deb
+  tunnel_name: epsilon
+  tunnel_id: XT3g...
+  tunnel_secret: 66f9...
+  tunnel_cert: ./certificates/epsilon_tunnel.cert
 ```
 
-The *setup_cnames* playbook is used to create the cnames on Cloudflare
+1. The *setup_cloudflare* playbook, is used to install cloudflared, tunnel credentials, and certificates on the hosts.
+2. The *setup_cnames* playbook is used to create the cnames on Cloudflare and connect the cname to a tunnel.
+  - I always create at least two per host: _host name_ and _ssh-host name_. I.e. if epsilon is the hosthame and foo.com the domain, then _epsilon.foo.com_ and _ssh-epsilon.foo.com_ would be registered in the DNS
+3.  Finally the *setup_ingress_rules* playbook will create the ingress rules on cloudflare.  Everytime an ingress rules is changed or added, the playbook needs to be re-run. 
+
+## Ingress Rules
+Ingress rules map cnames to ports. The cloudflared service, running on the host, receives an incoming request, and tries to find a [maching ingress rule](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/configure-tunnels/local-management/configuration-file/).
+
+E.g. this ingress rule for epsilon:
+```yaml
+- hostname: wordgame.{{ domain }}  # CNAME wordgame needs to be configured in Cloudflare/DNS
+  service: http://localhost:8001   # wordgame server 8001 -> 443
+- hostname: ssh-{{ hostname }}     # CNAME ssh-{hostname} needs to be configured in Cloudflare/DNS
+  service: ssh://localhost:22      # must be proxied using cloudflared on the client
+- hostname: mysql.{{ domain }}     # CNAME mysql needs to be configured in Cloudflare/DNS
+  service: tcp://localhost:3306    # must be proxied using cloudflared on the client  
+- service: http_status:404  
+```
+
+Only http/https connections can be made from the public internet directly. **Everything else need to proxied.** 
+While this is now considered [legacy](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/), I still find simply installing cloudflared on a client computer the easiest way to [ssh into a host](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/ssh-cloudflared-authentication/). 
+E.g., with cloudflared installed, I only need to add this to my `~/.ssh/config` to ssh into `ssh-epsilon`:
+
+```yaml
+Host ssh-epsilon
+    HostName ssh-epsilon.techcasitaproductions.com
+    User wolf
+    Port 11
+    ProxyCommand cloudflared access ssh --hostname %h
+    IdentityFile ~/.ssh/id_rsa
+```
+
+### MySQL Server
+
+Maybe you spotted this above:
+
+```yaml
+- hostname: mysql.{{ domain }}     # CNAME mysql needs to be configured in Cloudflare/DNS
+  service: tcp://localhost:3306    # must be proxied using cloudflared on the client  
+```  
+
+Yes, this is a MySQL server running on epsilon, well it's running inside a docker-container. Still, the question is how can we access it?
+Once again, I still find simply installing cloudflared on a client computer the easiest way to access the MySQL server.
+
+E.g.: running this command on a client computer:
 
 ```shell
-ansible-playbook ./playbooks/setup_cnames.yml
+cloudflared access tcp -T mysql.techcasitaproductions.com -L 127.0.0.1:3306
 ```
 
-followed by the *setup_cloudflare* playbook, which  
+allows you to connect to the remote MySQL server on localhost.
