@@ -302,6 +302,52 @@ ansible-playbook ./playbooks/setup_dca.yml -i epsilon,
 
 This would run the setup_dca.yml playbook on the epsilon host. __Notice the comma at the end!__ The inventory needs to be a list.
 
+## Ansible Docker Container vs Docker Compose
+*community.docker.docker_container vs community.docker.docker_compose_v2*
+
+If an application already provides with a pre-built Docker Compose file, it's often easier to use just that. I use this approach, deploying a MySQL container.
+
+```yaml title="setup_mysql.yml"
+- name: Setup mysql_db
+  hosts: beta
+  become: true
+  tasks:
+    - name: Copy Docker Compose files
+      ansible.builtin.template: # using Ansible's template modules instead of copy!
+        src: ./compose/mysql.yml
+        dest: ./docker-compose.yml
+    - name: Start docker compose project
+      community.docker.docker_compose_v2:
+        project_src: ./
+        files:
+          - docker-compose.yml
+```
+
+After replacing variables with their values, this will copy the `./compose/mysql.yml` file to target host(s) and name it `docker-compose.yml`.
+Next it will execute the file on the target. E.g.:
+
+```yaml title="mysql.yml"
+services: # This Docker Compose YAML deploys a MySQL database container.
+  mysql_db:
+    container_name: mysql-db # Name of the container
+    image: mysql # Official MySQL image from Docker Hub
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+    network_mode: host # Container uses host's network directly
+    hostname: localhost
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_HOST="%" # Allow connections from any host
+      - MYSQL_ROOT_PASSWORD={{ mysql_root_pw }}
+      - MYSQL_DATABASE={{ mysql_db }}
+      - MYSQL_USER={{ mysql_user }}
+      - MYSQL_PASSWORD={{ mysql_pw }}
+    volumes:
+      - ./volumes/mysql-mnt:/var/lib/mysql    
+
+```
+
+
 # Cloudflare
 Follow the fist couple of steps [here](https://wolfpaulus.com/flare) to create _Tunnel Certificate_, _Name_, _ID_, and _Secret_
 E.g.:
@@ -375,4 +421,4 @@ E.g.: running this command on a client computer:
 cloudflared access tcp -T mysql.techcasitaproductions.com -L 127.0.0.1:3306
 ```
 
-allows you to connect to the remote MySQL server on localhost.
+allows you to connect to the remote MySQL server mapped to localhost.
