@@ -73,7 +73,8 @@ all:
 
   hosts:
     alpha: # Intel Core i5-425 CPU 1.3 GHz, 16 GB RAM, 240 GB SSD, Ubuntu 24.04.1 LTS
-      hostname: alpha.techcasitaproductions.com
+      domain: techcasitaproductions.com
+      hostname: alpha.{{ domain }}
       architecture: "{{ansible_architecture}}"
       cloudflared_pkg: cloudflared-linux-amd64.deb
       tunnel_name: ...
@@ -82,7 +83,8 @@ all:
       tunnel_cert: ./certificates/alpha_tunnel.cert
 
     beta:  # Intel Core i3-321 CPU, 1.8 GHz, 16 GB RAM, 128 GB SSD, Ubuntu 24.04.1 LTS
-      hostname: beta.techcasitaproductions.com
+      domain: techcasitaproductions.com
+      hostname: beta.{{ domain }}
       architecture: "{{ansible_architecture}}"
       cloudflared_pkg: cloudflared-linux-amd64.deb
       tunnel_name: ...
@@ -91,7 +93,8 @@ all:
       tunnel_cert: ./certificates/beta_tunnel.cert      
 
     gamma: # RPi 5 BCM2712 Arm Cortex-A76 64bit CPU, 2.4GHz, 8 GB RAM, 256 GB SSD, Ubuntu 24.04.1 LTS
-      hostname: gamma.techcasitaproductions.com
+      domain: techcasitaproductions.com
+      hostname: gamma.{{ domain }}
       architecture: arm64
       cloudflared_pkg: cloudflared-linux-arm64.deb
       tunnel_name: ...
@@ -100,7 +103,8 @@ all:
       tunnel_cert: ./certificates/gamma_tunnel.cert
 
     delta: # RPi 5 BCM2712 Arm Cortex-A76 64bit CPU, 2.4GHz, 16 GB RAM, 500 GB SSD, Ubuntu 24.04.1 LTS
-      hostname: delta.techcasitaproductions.com
+      domain: techcasitaproductions.com
+      hostname: delta.{{ domain }}
       architecture: arm64
       tunnel_name: ...
       tunnel_id: ...
@@ -362,7 +366,8 @@ cloudflared tunnel create epsilon
 After adding the following key/value pairs to in host inventory:
 ```yaml
 epsilon: 
-  hostname: epsilon.techcasitaproductions.com
+  domain: techcasitaproductions.com
+  hostname: epsilon.{{ domain }}
   architecture: arm64
   cloudflared_pkg: cloudflared-linux-arm64.deb
   tunnel_name: epsilon
@@ -375,6 +380,8 @@ epsilon:
 2. The *setup_cnames* playbook is used to create the cnames on Cloudflare and connect the cname to a tunnel.
   - I always create at least two per host: _host name_ and _ssh-host name_. I.e. if epsilon is the hosthame and foo.com the domain, then _epsilon.foo.com_ and _ssh-epsilon.foo.com_ would be registered in the DNS
 3.  Finally the *setup_ingress_rules* playbook will create the ingress rules on cloudflare.  Everytime an ingress rules is changed or added, the playbook needs to be re-run. 
+
+> Please Note: The tunnel will only work after running all three playbooks: setup_cloudflare, setup_cnames, setup ingress_rules. The final step of the 3rd playbook will restart the cloudflared service, resulting in a __healthy__ tunnel status.
 
 ## Ingress Rules
 Ingress rules map cnames to ports. The cloudflared service, running on the host, receives an incoming request, and tries to find a [maching ingress rule](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/configure-tunnels/local-management/configuration-file/).
