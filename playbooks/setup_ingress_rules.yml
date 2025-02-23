@@ -55,11 +55,11 @@
         name: cloudflared
         state: restarted
 
-- name: Setup ingress rules for the gamma tunnel.
-  hosts: gamma
+- name: Setup ingress rules for the apollo tunnel.
+  hosts: apollo
   become: true
   tasks:
-    - name: Create the config file for cloudflared and define the ingress rules for the beta tunnel
+    - name: Create the config file for cloudflared and define the ingress rules for the apollo tunnel
       ansible.builtin.copy:
         dest: "/etc/cloudflared/config.yml"
         content: |
@@ -78,8 +78,8 @@
         name: cloudflared
         state: restarted
 
-- name: Setup ingress rules for the delta tunnel.
-  hosts: delta
+- name: Setup ingress rules for the artemis tunnel.
+  hosts: artemis
   become: true
   tasks:
     - name: Create the config file for cloudflared and define the ingress rules for the beta tunnel
@@ -93,6 +93,8 @@
           ingress: # ingress rules for the tunnel
             - hostname: ssh-{{ hostname }}  # CNAME ssh-{hostname} needs to be configured in Cloudflare/DNS
               service: ssh://localhost:22   # must be proxied using cloudflared on the client
+            - hostname: mysql.{{ domain }}
+              service: tcp://localhost:3306 # must be proxied using cloudflared on the client
             - service: http_status:404
         mode: "0440"
 

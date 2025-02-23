@@ -29,23 +29,24 @@
       register: my_output
       changed_when: my_output.rc != 0
 
-- name: Setup CNAMES for the gamma tunnel.
-  hosts: gamma
+- name: Setup CNAMES for the apollo tunnel.
+  hosts: apollo
   become: true
   tasks:
-    - name: Create CNAMES for the gamma tunnel. # put newest first
+    - name: Create CNAMES for the apollo tunnel. # put newest first
       ansible.builtin.shell: |
-        cloudflared tunnel route dns "{{ tunnel_id }}" ssh-{{ hostname.split('.')[0] }}
-        cloudflared tunnel route dns "{{ tunnel_id }}" {{ hostname.split('.')[0] }}
+        cloudflared tunnel route dns "{{ tunnel_id }}" ssh-{{ hostname.split('.')[0] }}.{{ domain }}
+        cloudflared tunnel route dns "{{ tunnel_id }}" {{ hostname.split('.')[0] }}.{{ domain }}
       register: my_output
       changed_when: my_output.rc != 0
 
-- name: Setup CNAMES for the delta tunnel.
-  hosts: delta
+- name: Setup CNAMES for the artemis tunnel.
+  hosts: artemis
   become: true
   tasks:
-    - name: Create CNAMES for the delta tunnel. # put newest first
+    - name: Create CNAMES for the artemis tunnel. # put newest first
       ansible.builtin.shell: |
+        cloudflared tunnel route dns "{{ tunnel_id }}" mysql
         cloudflared tunnel route dns "{{ tunnel_id }}" ssh-{{ hostname.split('.')[0] }}
         cloudflared tunnel route dns "{{ tunnel_id }}" {{ hostname.split('.')[0] }}
       register: my_output

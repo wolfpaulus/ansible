@@ -7,7 +7,7 @@
 # - cp /Users/wolf/.cloudflared/cert.pem ./playbooks/certificates/gamma_tunnel.cert
 # - cloudflared tunnel create gamma
 # Check here for more details: https://wolfpaulus.com/flare
-# Since setup_cnams.yml requires that cloudflared is installed on the hosts, this playbook should be run before the setup_cnams.yml playbook.
+# Since setup_cnams.yml requires that cloudflared is installed on the hosts, this playbook should be run before the setup_cnames.yml playbook.
 
 - name: Install cloudflared
   hosts: all
