@@ -1,0 +1,23 @@
+# Description: This playbook is used to allow mysql root login from all hosts
+# This is useful for remote connections to the database.
+# I used to connect to the docker container to running the following commands:
+# mysql -p
+# mysql> CREATE USER 'root'@'%' IDENTIFIED BY '... root password  ...';
+# mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+
+- name: Allow mysql root login from all hosts
+  hosts: artemis
+  become: true
+
+  tasks:
+    - name: Change root PRIVILEGES
+      vars:
+        pw: "{{ mysql_root_pw }}"
+      community.docker.docker_container_exec:
+        container: mysql-db
+        command: '/bin/bash -c "{{ item }}"'
+      register: result
+      with_items:
+        - mysql -uroot -p{{ pw }} -e 'CREATE USER \"root\"@\"%\" IDENTIFIED BY \"{{ pw }}\";'
+        - mysql -uroot -p{{ pw }} -e 'GRANT ALL PRIVILEGES ON *.* TO \"root\"@\"%\" WITH GRANT OPTION;'
+        - mysql -uroot -p{{ pw }} -e 'FLUSH PRIVILEGES;'

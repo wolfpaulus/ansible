@@ -14,5 +14,6 @@ services: # This Docker Compose YAML deploys a MySQL database container.
       - MYSQL_DATABASE={{ mysql_db }}
       - MYSQL_USER={{ mysql_user }}
       - MYSQL_PASSWORD={{ mysql_pw }}
+      - BIND_ADDRESS=*
     volumes:
       - ./volumes/mysql-mnt:/var/lib/mysql    

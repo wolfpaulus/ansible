@@ -3,7 +3,7 @@
 # E.g.: execute this on the client machine:
 # `cloudflared access tcp --hostname mysql.techcasitaproductions.com --url localhost:3306`
 - name: Setup mysql_db
-  hosts: beta
+  hosts: artemis
   become: true
   tasks:
     - name: Copy Docker Compose files
