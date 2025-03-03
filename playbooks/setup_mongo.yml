@@ -1,21 +1,21 @@
-# Description: This playbook is used to setup the MySQL database.
+# Description: This playbook is used to setup Mongo DB.
 # Keep in mind that connecting to the datebase remotely, requires the use of cloudflared.
 # E.g.: execute this on the client machine:
-# `cloudflared access tcp --hostname mysql.techcasitaproductions.com --url localhost:3306`
-- name: Setup mysql_db
+# `cloudflared access tcp --hostname mongo.erau.cloud --url localhost:27017`
+- name: Setup mongo_db
   hosts: artemis
   become: true
   tasks:
     - name: Creates directory
       ansible.builtin.file:
-        path: ./mysql
-        state: directory    
+        path: ./mongo
+        state: directory
     - name: Copy Docker Compose files
       ansible.builtin.template: # using Ansible's template modules instead of copy!
-        src: ./compose/mysql.yml
-        dest: ./mysql/docker-compose.yml
+        src: ./compose/mongo.yml
+        dest: ./mongo/docker-compose.yml
     - name: Start docker compose project
       community.docker.docker_compose_v2:
-        project_src: ./mysql
+        project_src: ./mongo
         files:
           - docker-compose.yml

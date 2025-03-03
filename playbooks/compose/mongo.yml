@@ -1,0 +1,19 @@
+# This Ansible playbook deploys a MongoDB container using Docker Compose.
+services: # This Docker Compose YAML deploys a MongoDB container.
+  mongo_db:
+    container_name: mongo-db # Name of the container
+    image: mongo
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+    network_mode: host # Container uses host's network directly
+    # ports: Published ports are discarded when using host network mode
+    hostname: localhost
+    restart: unless-stopped
+    environment: 
+      - MONGO_INITDB_ROOT_USERNAME={{ mongo_root_user }}
+      - MONGO_INITDB_ROOT_PASSWORD={{ mongo_root_pw }} 
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0 
+      # Required for MongoDB, "disable restartable sequences support in the GNU C Library
+    volumes:
+      # need to be an absolute path to work for this container
+      - /home/{{ ansible_user }}/volumes/mongo_data:/data/db # find MongoDB data on host a: ~/volumes/mongo_data

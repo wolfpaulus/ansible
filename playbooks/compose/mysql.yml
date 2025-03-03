@@ -6,6 +6,7 @@ services: # This Docker Compose YAML deploys a MySQL database container.
     labels:
       com.centurylinklabs.watchtower.enable: "true"
     network_mode: host # Container uses host's network directly
+    # ports: Published ports are discarded when using host network mode
     hostname: localhost
     restart: unless-stopped
     environment:
@@ -16,4 +17,5 @@ services: # This Docker Compose YAML deploys a MySQL database container.
       - MYSQL_PASSWORD={{ mysql_pw }}
       - BIND_ADDRESS=*
     volumes:
-      - ./volumes/mysql-mnt:/var/lib/mysql    
+      - ./volumes/mysql-mnt:/var/lib/mysql
+
