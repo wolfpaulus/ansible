@@ -46,6 +46,7 @@
   tasks:
     - name: Create CNAMES for the artemis tunnel. # put newest first
       ansible.builtin.shell: |
+        cloudflared tunnel route dns "{{ tunnel_id }}" mongo
         cloudflared tunnel route dns "{{ tunnel_id }}" mysql
         cloudflared tunnel route dns "{{ tunnel_id }}" ssh-{{ hostname.split('.')[0] }}
         cloudflared tunnel route dns "{{ tunnel_id }}" {{ hostname.split('.')[0] }}

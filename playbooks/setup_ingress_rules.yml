@@ -91,14 +91,16 @@
           logfile: /var/log/cloudflared.log
           loglevel: warn
           ingress: # ingress rules for the tunnel
-            - hostname: ssh-{{ hostname }}  # CNAME ssh-{hostname} needs to be configured in Cloudflare/DNS
-              service: ssh://localhost:22   # must be proxied using cloudflared on the client
+            - hostname: mongo.{{ domain }}
+              service: tcp://localhost:27017 # must be proxied using cloudflared on the client          
             - hostname: mysql.{{ domain }}
-              service: tcp://localhost:3306 # must be proxied using cloudflared on the client
+              service: tcp://localhost:3306  # must be proxied using cloudflared on the client
+            - hostname: ssh-{{ hostname }}  
+              service: ssh://localhost:22    # must be proxied using cloudflared on the client
             - service: http_status:404
         mode: "0440"
 
     - name: Start the tunnel.
       ansible.builtin.service:
         name: cloudflared
-        state: restarted  
+        state: restarted
