@@ -91,6 +91,8 @@
           logfile: /var/log/cloudflared.log
           loglevel: warn
           ingress: # ingress rules for the tunnel
+            - hostname: qdrant.{{ domain }}
+              service: tcp://localhost:6333 # must be proxied using cloudflared on the client               
             - hostname: mongo.{{ domain }}
               service: tcp://localhost:27017 # must be proxied using cloudflared on the client          
             - hostname: mysql.{{ domain }}
