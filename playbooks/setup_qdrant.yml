@@ -1,0 +1,21 @@
+# Description: This playbook is used to setup Qdrant, a vector database and a semantic search engine. 
+# Keep in mind that connecting to the datebase remotely, requires the use of cloudflared.
+# E.g.: execute this on the client machine:
+# `cloudflared access tcp --hostname qdrant.erau.cloud --url localhost:6333`
+- name: Setup qdrant_db
+  hosts: artemis
+  become: true
+  tasks:
+    - name: Creates directory
+      ansible.builtin.file:
+        path: ./qdrant
+        state: directory
+    - name: Copy Docker Compose files
+      ansible.builtin.template: # using Ansible's template modules instead of copy!
+        src: ./compose/qdrant.yml
+        dest: ./qdrant/docker-compose.yml
+    - name: Start docker compose project
+      community.docker.docker_compose_v2:
+        project_src: ./qdrant
+        files:
+          - docker-compose.yml

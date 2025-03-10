@@ -1,0 +1,20 @@
+# This Ansible playbook deploys a qDrant container using Docker Compose.
+services:
+  qdrant:
+    container_name: qdrant-db  
+    image: qdrant/qdrant:latest
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+    network_mode: host # Container uses host's network directly
+    # ports: Published ports are discarded when using host network mode
+    hostname: localhost
+    restart: unless-stopped
+    environment:
+      - QDRANT__SERVICE__API_KEY={{ qdrant_api_key }}
+    volumes:
+      - ./volumes/qdrant-mnt:/qdrant/storage
+
+configs:
+  qdrant_config:
+    content: |
+      log_level: INFO

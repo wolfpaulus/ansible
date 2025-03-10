@@ -1,7 +1,7 @@
 # This Ansible playbook deploys a MongoDB container using Docker Compose.
 services: # This Docker Compose YAML deploys a MongoDB container.
   mongo_db:
-    container_name: mongo-db # Name of the container
+    container_name: mongo-db
     image: mongo
     labels:
       com.centurylinklabs.watchtower.enable: "true"
