@@ -8,6 +8,8 @@
 # - cloudflared tunnel create gamma
 # Check here for more details: https://wolfpaulus.com/flare
 # Since setup_cnams.yml requires that cloudflared is installed on the hosts, this playbook should be run before the setup_cnames.yml playbook.
+#
+# PLEASE NOTE: It's OK if the last step , starting the tunnel' originally fails because no ingress rules have been defined yet.
 
 - name: Install cloudflared
   hosts: all
@@ -48,7 +50,7 @@
       block:
         - name: Install the tunnel as a systemd service
           ansible.builtin.shell: |
-            cloudflared service install
+            sudo cloudflared service install
           register: my_output # <- Registers the command output.
           changed_when: my_output.rc != 0 # <- Uses the return code to define when the task has changed.
       rescue:
