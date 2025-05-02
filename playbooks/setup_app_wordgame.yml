@@ -1,6 +1,6 @@
 # Description: This playbook installs the wordgame application on the alpha host.
 - name: Install wordgame Application
-  hosts: alpha
+  hosts: apollo
   become: true
   tasks:
     - name: Install public Docker Container from GitHub Container Registry
