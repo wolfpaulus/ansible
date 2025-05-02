@@ -267,6 +267,8 @@ After experimenting with all the before mentioned playbooks and verifying that t
 #
 # Running the playbooks in sequence
 #
+- name: upgrade Ubuntu/Debian servers and reboot if needed
+  ansible.builtin.import_playbook: update.yml
 - name: Running the playbook setting the time zone
   ansible.builtin.import_playbook: set_timezone.yml
 - name: Running the playbook installing docker etc
@@ -278,7 +280,7 @@ After experimenting with all the before mentioned playbooks and verifying that t
 ```
 
 Running this playbook will 
-
+- upgrade Ubuntu/Debian servers and reboot if needed
 - set the timezone
 - install docker
 - install portainer
