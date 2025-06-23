@@ -3,7 +3,7 @@
 # It will update the package list, upgrade all packages, and reboot if necessary
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html
 - name: Upgrade Ubuntu/Debian servers
-  hosts: all
+  hosts: amd64
   become: true
   tasks:
     - name: Perform a dist-upgrade.

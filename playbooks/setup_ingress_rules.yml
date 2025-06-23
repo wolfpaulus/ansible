@@ -60,6 +60,8 @@
           logfile: /var/log/cloudflared.log
           loglevel: warn
           ingress: # ingress rules for the tunnel
+            - hostname: weather.{{ domain }}
+              service: http://localhost:8002 # weather server 8002 -> 443
             - hostname: wordgame.{{ domain }}
               service: http://localhost:8001 # wordgame server 8001 -> 443
             - hostname: dca.{{ domain }}

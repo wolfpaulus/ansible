@@ -1,0 +1,62 @@
+# This playbook sets up the ZeroMonitor auto-update script.
+# It downloads the script from a specified URL and sets it to run every 5 minutes using cron.
+# The cron job is named "ZeroMonitor Auto-Update" and runs the script every 15 minutes.
+- name: Deploy and schedule ZeroMonitor auto-update script
+  hosts: monitors
+  become: yes
+  vars:
+    script_url: "https://raw.githubusercontent.com/wolfpaulus/ZeroMonitor/main/cicd/auto_update_zero_monitor.sh"
+    script_path: "/usr/local/bin/auto_update_zero_monitor.sh"
+    cron_name: "ZeroMonitor Auto-Update"
+
+  tasks:
+    - name: Ensure required packages are installed
+      become: true
+      apt:
+        name:
+          - sysstat
+          - build-essential
+          - libssl-dev
+          - python3-dev
+          - python3-pip
+          - python3-venv
+          - python3-yaml
+          - python3-paramiko
+          - python3-numpy
+          - python3-pil
+          - python3-spidev
+          - python3-smbus
+          - python3-gpiozero
+          - git
+        state: present
+        update_cache: yes
+
+    - name: Copy ssh/id_rsa to /root/.ssh/id_rsa
+      ansible.builtin.copy:
+        src: /Users/wolf/.ssh/id_rsa
+        dest: /root/.ssh/id_rsa
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Copy ssh/config to /root/.ssh/config
+      ansible.builtin.copy:
+        src: /Users/wolf/.ssh/config
+        dest: /root/.ssh/config
+        owner: root
+        group: root
+        mode: '0600' 
+
+    - name: Download the auto-update script
+      ansible.builtin.get_url:
+        url: "{{ script_url }}"
+        dest: "{{ script_path }}"
+        mode: '0755'
+        force: yes
+
+    - name: Schedule the auto-update script via cron, based on the name parameter cron job is only created once
+      ansible.builtin.cron:
+        name: "{{ cron_name }}"
+        minute: "*/3"
+        job: "{{ script_path }} >> /var/log/zero_monitor_update.log 2>&1"
+        state: present

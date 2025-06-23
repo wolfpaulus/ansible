@@ -1,0 +1,20 @@
+  # This Ansible playbook deploys a Plex Media Server container using Docker Compose.
+  # It uses the official Plex Docker image and mounts necessary volumes for configuration and media.
+  services: # Define the services to be deployed
+    plex-server:
+      container_name: plex-server
+      image: plexinc/pms-docker:latest
+      labels:
+        # Enable Watchtower for automatic updates
+        com.centurylinklabs.watchtower.enable: "true"  
+      network_mode: host # Container uses host's network directly
+      # ports: Published ports are discarded when using host network mode
+      hostname: localhost
+      restart: unless-stopped
+      environment:
+        - TZ="{{timezone}}"
+        - PLEX_CLAIM="{{ plex_claim }}" # Claim token for Plex 
+      volumes:
+        - /etc/plex/config:/config  # plex database
+        - /etc/plex/transcode:/transcode # temp transcoded files
+        - {{ local_media }}:/data # media library

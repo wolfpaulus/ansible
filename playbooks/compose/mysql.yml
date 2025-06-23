@@ -1,9 +1,11 @@
 # This Ansible playbook deploys a MySQL database container using Docker Compose.
+# It uses the official MySQL Docker image and mounts a volume for persistent storage.
 services: # This Docker Compose YAML deploys a MySQL database container.
   mysql_db:
     container_name: mysql-db # Name of the container
     image: mysql # Official MySQL image from Docker Hub
     labels:
+      # Enable Watchtower for automatic updates
       com.centurylinklabs.watchtower.enable: "true"
     network_mode: host # Container uses host's network directly
     # ports: Published ports are discarded when using host network mode

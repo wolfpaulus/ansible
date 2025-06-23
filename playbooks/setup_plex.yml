@@ -1,0 +1,41 @@
+# Description: This playbook is used to setup PLex Media Server using Docker Compose. 
+# It creates a directory for Plex, copies the Docker Compose file, and starts the Plex server container.
+- name: Setup plex
+  hosts: alpha
+  become: true
+  tasks:
+    - name: Install required packages
+      ansible.builtin.package:
+        name:
+          - cifs-utils
+        state: present
+    
+    - name: Ensure mount point exists
+      file:
+        path: "{{ local_media }}"
+        state: directory
+        mode: '0755'
+
+    - name: Mount SMB share
+      ansible.posix.mount:
+        path: "{{ local_media }}" # mount point for the SMB share on the docker host
+        src: "{{ omega_media }}" # media share on the NAS
+        fstype: cifs
+        opts: "username={{ omega_user }},password={{ omega_pw }},uid=1026,gid=100,file_mode=0777,dir_mode=0777,nounix,iocharset=utf8"
+        state: mounted
+
+    - name: Creates directory
+      ansible.builtin.file:
+        path: ./plex
+        state: directory
+    
+    - name: Copy Docker Compose files
+      ansible.builtin.template: # using Ansible's template modules instead of copy!
+        src: ./compose/plex.yml
+        dest: ./plex/docker-compose.yml
+    
+    - name: Start docker compose project
+      community.docker.docker_compose_v2:
+        project_src: ./plex
+        files:
+          - docker-compose.yml

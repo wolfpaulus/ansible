@@ -32,6 +32,7 @@
   tasks:
     - name: Create CNAMES for the apollo tunnel. # put newest first
       ansible.builtin.shell: |
+        cloudflared tunnel route dns "{{ tunnel_id }}" weather
         cloudflared tunnel route dns "{{ tunnel_id }}" wordgame
         cloudflared tunnel route dns "{{ tunnel_id }}" dca
         cloudflared tunnel route dns "{{ tunnel_id }}" ssh-{{ hostname.split('.')[0] }}.{{ domain }}

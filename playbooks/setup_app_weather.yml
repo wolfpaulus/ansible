@@ -1,0 +1,15 @@
+# Description: This playbook installs the wordgame application on the alpha host.
+- name: Install wordgame Application
+  hosts: apollo
+  become: true
+  tasks:
+    - name: Install public Docker Container from GitHub Container Registry
+      community.docker.docker_container:
+        name: weather
+        image: ghcr.io/wolfpaulus/weather_ui:main
+        labels:
+          com.centurylinklabs.watchtower.enable: "true"
+        state: started
+        restart_policy: unless-stopped
+        published_ports:
+          - "8002:8000" # host port : container port
