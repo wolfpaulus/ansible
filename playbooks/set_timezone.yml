@@ -1,8 +1,0 @@
-# Description: Set timezone on all hosts
-- name: Set timezone
-  hosts: all
-  become: true
-  tasks:
-    - name: Set tz
-      community.general.timezone:
-        name: "{{ timezone }}"

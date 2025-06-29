@@ -21,7 +21,7 @@
         path: "{{ local_media }}" # mount point for the SMB share on the docker host
         src: "{{ omega_media }}" # media share on the NAS
         fstype: cifs
-        opts: "username={{ omega_user }},password={{ omega_pw }},uid=1026,gid=100,file_mode=0777,dir_mode=0777,nounix,iocharset=utf8"
+        opts: "username={{ omega_user }},password={{ omega_pw }},uid=1026,gid=100,file_mode=0777,dir_mode=0777,nounix,iocharset=utf8,noauto,x-systemd.automount"
         state: mounted
 
     - name: Creates directory

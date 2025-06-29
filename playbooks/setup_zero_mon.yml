@@ -2,7 +2,7 @@
 # It downloads the script from a specified URL and sets it to run every 5 minutes using cron.
 # The cron job is named "ZeroMonitor Auto-Update" and runs the script every 15 minutes.
 - name: Deploy and schedule ZeroMonitor auto-update script
-  hosts: monitors
+  hosts: zero
   become: yes
   vars:
     script_url: "https://raw.githubusercontent.com/wolfpaulus/ZeroMonitor/main/cicd/auto_update_zero_monitor.sh"

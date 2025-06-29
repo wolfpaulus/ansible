@@ -1,0 +1,19 @@
+# Shutdown all servers
+- name: Shutdown all servers
+  hosts: all
+  become: true
+  tasks:
+    - name: Shutdown the server
+      ansible.builtin.command: shutdown -h now
+      async: 1
+      poll: 0
+      register: shutdown_result
+
+    - name: Wait for the shutdown to complete
+      ansible.builtin.async_status:
+        jid: "{{ shutdown_result.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 5
+      delay: 10
+

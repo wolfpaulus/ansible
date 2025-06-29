@@ -1,0 +1,25 @@
+# Description: Set timezone on all hosts and basic system configuration
+- name: Set timezone
+  hosts: amd64, arm64
+  become: true
+  tasks:
+    - name: Set tz
+      community.general.timezone:
+        name: "{{ timezone }}"
+
+    - name: Ensure required packages are installed
+      apt:
+        name:
+          - sysstat
+          - cifs-utils
+          - avahi-daemon 
+          - avahi-discover 
+          - libnss-mdns
+        state: present
+        update_cache: yes
+    
+    - name: Enable avahi-daemon
+      systemd:
+        name: avahi-daemon
+        enabled: true
+        state: started

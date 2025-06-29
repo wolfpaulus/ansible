@@ -2,8 +2,8 @@
 # This playbook is designed to be run as a root user
 # It will update the package list, upgrade all packages, and reboot if necessary
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html
-- name: Upgrade Ubuntu/Debian servers
-  hosts: amd64
+- name: Upgrade Debian servers
+  hosts: amd64, arm64, zero
   become: true
   tasks:
     - name: Perform a dist-upgrade.

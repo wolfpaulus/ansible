@@ -12,7 +12,7 @@
 # PLEASE NOTE: It's OK if the last step , starting the tunnel' originally fails because no ingress rules have been defined yet.
 
 - name: Install cloudflared
-  hosts: all
+  hosts: amd64, arm64 
   become: true
   tasks:
     - name: Download the cloudflared Linux package

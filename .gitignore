@@ -6,3 +6,4 @@
 .DS_Store
 *.cert
 hosts.yml
+facts.json

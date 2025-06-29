@@ -1,10 +1,10 @@
 #
 # Running the playbooks in sequence
 #
-- name: upgrade Ubuntu/Debian servers and reboot if needed
+- name: upgrade Debian servers and reboot if needed
   ansible.builtin.import_playbook: update.yml
-- name: Running the playbook setting the time zone
-  ansible.builtin.import_playbook: set_timezone.yml
+- name: Running the playbook setting the time zone, installs essential packages
+  ansible.builtin.import_playbook: init.yml
 - name: Running the playbook installing docker etc
   ansible.builtin.import_playbook: setup_docker.yml
 - name: Running the playbook installing portainer

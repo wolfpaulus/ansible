@@ -148,16 +148,16 @@ For example, with my `hosts.yml` file setup, this command shows information abou
 
 ### Syntax check, linting, dry-run, and run
 
-- `ansible-playbook --sytax-check ./playbooks/set_timezone.yml`
-- `ansible-lint ./playbooks/set_timezone.yml`
-- `ansible-playbook -C ./playbooks/set_timezone.yml`
-- `ansible-playbook ./playbooks/set_timezone.yml`
+- `ansible-playbook --sytax-check ./playbooks/init.yml`
+- `ansible-lint ./playbooks/init.yml`
+- `ansible-playbook -C ./playbooks/init.yml`
+- `ansible-playbook ./playbooks/init.yml`
 
 
 Setting the timezone on all hosts mentioned in `hosts.yml` file would look like this:
 
 ```text
-ansible-playbook ./playbooks/set_timezone.yml
+ansible-playbook ./playbooks/init.yml
 
 PLAY [Set timezone] ************************************************************
 
@@ -270,7 +270,7 @@ After experimenting with all the before mentioned playbooks and verifying that t
 - name: upgrade Ubuntu/Debian servers and reboot if needed
   ansible.builtin.import_playbook: update.yml
 - name: Running the playbook setting the time zone
-  ansible.builtin.import_playbook: set_timezone.yml
+  ansible.builtin.import_playbook: init.yml
 - name: Running the playbook installing docker etc
   ansible.builtin.import_playbook: setup_docker.yml
 - name: Runningun the playbook installing portainer
@@ -280,8 +280,8 @@ After experimenting with all the before mentioned playbooks and verifying that t
 ```
 
 Running this playbook will 
-- upgrade Ubuntu/Debian servers and reboot if needed
-- set the timezone
+- upgrade Debian servers and reboot if needed
+- init set the timezone and installs essential packages
 - install docker
 - install portainer
 - install watchtower
