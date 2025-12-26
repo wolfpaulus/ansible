@@ -8,18 +8,18 @@
         name: "{{ timezone }}"
 
     - name: Ensure required packages are installed
-      apt:
+      ansible.builtin.apt:
         name:
           - sysstat
           - cifs-utils
-          - avahi-daemon 
-          - avahi-discover 
+          - avahi-daemon
+          - avahi-discover
           - libnss-mdns
         state: present
-        update_cache: yes
-    
+        update_cache: true
+
     - name: Enable avahi-daemon
-      systemd:
+      ansible.builtin.systemd:
         name: avahi-daemon
         enabled: true
         state: started
