@@ -6,9 +6,9 @@
     - name: Install public Docker Container from GitHub Container Registry
       community.docker.docker_container:
         name: dca
-        image: ghcr.io/wolfpaulus/dca:latest
+        image: ghcr.io/wolfpaulus/dca:main
         labels:
-          com.centurylinklabs.watchtower.enable: "true"
+          wud.watch.digest: "true"
         state: started
         restart_policy: unless-stopped
         published_ports:

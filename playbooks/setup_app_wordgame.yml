@@ -1,14 +1,14 @@
 # Description: This playbook installs the wordgame application on the alpha host.
 - name: Install wordgame Application
-  hosts: apollo
+  hosts: ares
   become: true
   tasks:
     - name: Install public Docker Container from GitHub Container Registry
       community.docker.docker_container:
         name: wordgame
-        image: ghcr.io/wolfpaulus/wordgame:latest
+        image: ghcr.io/wolfpaulus/wordgame:main
         labels:
-          com.centurylinklabs.watchtower.enable: "true"
+          wud.watch.digest: "true"
         state: started
         restart_policy: unless-stopped
         published_ports:

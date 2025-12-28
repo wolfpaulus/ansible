@@ -1,6 +1,6 @@
 # Description: This playbook installs the wordgame application on the alpha host.
 - name: Install wordgame Application
-  hosts: apollo
+  hosts: beta
   become: true
   tasks:
     - name: Install public Docker Container from GitHub Container Registry
@@ -8,7 +8,7 @@
         name: weather
         image: ghcr.io/wolfpaulus/weather_ui:main
         labels:
-          com.centurylinklabs.watchtower.enable: "true"
+          wud.watch.digest: "true"
         state: started
         restart_policy: unless-stopped
         published_ports:
