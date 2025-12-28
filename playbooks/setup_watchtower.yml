@@ -8,7 +8,7 @@
     - name: Install Watchtower
       community.docker.docker_container:
         name: watchtower
-        image: containrrr/watchtower
+        image: nickfedor/watchtower:latest
         labels:
           com.centurylinklabs.watchtower.enable: "true"
         state: started
