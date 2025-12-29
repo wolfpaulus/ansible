@@ -6,10 +6,11 @@
     - name: Install public Docker Container from GitHub Container Registry
       community.docker.docker_container:
         name: wordgame
-        image: ghcr.io/wolfpaulus/wordgame:main
+        image: ghcr.io/wolfpaulus/wordgame:latest
         labels:
-          wud.watch.digest: "true"
+          com.centurylinklabs.watchtower.enable: "true"
         state: started
         restart_policy: unless-stopped
         published_ports:
           - "8001:8000" # host port : container port
+

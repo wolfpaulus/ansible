@@ -1,9 +1,10 @@
 # Description: Install Watchtower to automatically update Docker containers
 - name: Install Watchtower
-  hosts: ares
+  hosts: ares, beta
   become: true
   vars:
-    poll_interval: 600 # polling interval in seconds (10 minutes)
+    poll_interval: "600" # polling interval in seconds (10 minutes)
+    
   tasks:
     - name: Install Watchtower
       community.docker.docker_container:
@@ -17,9 +18,9 @@
           - /var/run/docker.sock:/var/run/docker.sock
         env:
           TZ: "{{ timezone }}"
-          WATCHTOWER_POLL_INTERVAL: "600" # polling interval in seconds
+          WATCHTOWER_POLL_INTERVAL: "{{ poll_interval }}" # polling interval in seconds
           WATCHTOWER_CLEANUP: "true" # remove old images after updating
           WATCHTOWER_INCLUDE_STOPPED: "true" # monitor (and updatye) stopped containers
           WATCHTOWER_INCLUDE_RESTARTING: "true"
-          WATCHTOWER_LABEL_ENABLE: "1" # monitor only containers with the enable label set to true: com.centurylinklabs.watchtower.enable
+          WATCHTOWER_LABEL_ENABLE: "true" # monitor only containers with the enable label set to true: com.centurylinklabs.watchtower.enable
           WATCHTOWER_DEBUG: "true"

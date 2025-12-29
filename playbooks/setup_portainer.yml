@@ -1,6 +1,6 @@
 # Description: This playbook is used to install Portainer on the target host.
 - name: Install Portainer
-  hosts: ares
+  hosts: beta
   become: true
   tasks:
     - name: Install Portainer

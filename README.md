@@ -65,51 +65,45 @@ Looking at ansible as just like another VSCode project, my `~/VSCodeProjects/ans
 ```yaml
 all:
   vars: # global variables
+    command_timeout: 60 
     ansible_connection: ssh
     ansible_user: wolf
-    key_file=/home/wolf/: ssh/id_rsa
+    key_file: /home/wolf/.ssh/id_rsa
     timezone: America/Phoenix
     account_tag: ... # Cloudflare account tag
+    domain: wolfpaulus.com
 
   hosts:
-    alpha: # Intel Core i5-425 CPU 1.3 GHz, 16 GB RAM, 240 GB SSD, Ubuntu 24.04.1 LTS
-      domain: techcasitaproductions.com
+    alpha: # Intel Core i5-425 CPU 1.3 GHz, 16 GB RAM, 240 GB SSD
       hostname: alpha.{{ domain }}
       architecture: "{{ansible_architecture}}"
       cloudflared_pkg: cloudflared-linux-amd64.deb
       tunnel_name: ...
       tunnel_id: ...
       tunnel_secret: ...
-      tunnel_cert: ./certificates/alpha_tunnel.cert
 
-    beta:  # Intel Core i3-321 CPU, 1.8 GHz, 16 GB RAM, 128 GB SSD, Ubuntu 24.04.1 LTS
-      domain: techcasitaproductions.com
+    beta:  # Intel Core i3-321 CPU, 1.8 GHz, 16 GB RAM, 128 GB SSD
       hostname: beta.{{ domain }}
       architecture: "{{ansible_architecture}}"
       cloudflared_pkg: cloudflared-linux-amd64.deb
       tunnel_name: ...
       tunnel_id: ...
       tunnel_secret: ...
-      tunnel_cert: ./certificates/beta_tunnel.cert      
 
-    gamma: # RPi 5 BCM2712 Arm Cortex-A76 64bit CPU, 2.4GHz, 8 GB RAM, 256 GB SSD, Ubuntu 24.04.1 LTS
-      domain: techcasitaproductions.com
+    gamma: # RPi 5 BCM2712 Arm Cortex-A76 64bit CPU, 2.4GHz, 8 GB RAM, 256 GB SSD
       hostname: gamma.{{ domain }}
       architecture: arm64
       cloudflared_pkg: cloudflared-linux-arm64.deb
       tunnel_name: ...
       tunnel_id: ...
       tunnel_secret: ...
-      tunnel_cert: ./certificates/gamma_tunnel.cert
 
-    delta: # RPi 5 BCM2712 Arm Cortex-A76 64bit CPU, 2.4GHz, 16 GB RAM, 500 GB SSD, Ubuntu 24.04.1 LTS
-      domain: techcasitaproductions.com
+    delta: # RPi 5 BCM2712 Arm Cortex-A76 64bit CPU, 2.4GHz, 16 GB RAM, 500 GB SSD
       hostname: delta.{{ domain }}
       architecture: arm64
       tunnel_name: ...
       tunnel_id: ...
       tunnel_secret: ...
-      tunnel_cert: ./certificates/delta_tunnel.cert      
 ```
 
 I guess, by now, you already get the idea that Ansible does all its _"magic"_ via _ssh_. To make this all work, the hosts need to have [sshd](https://www.ssh.com/academy/ssh/sshd) installed and running. Moreover, the public key (id_rsa.pub), belonging to your id_rsa private key needs to be configured (in ~/.ssh/authorized_keys) on the remote hosts.
@@ -148,7 +142,7 @@ For example, with my `hosts.yml` file setup, this command shows information abou
 
 ### Syntax check, linting, dry-run, and run
 
-- `ansible-playbook --sytax-check ./playbooks/init.yml`
+- `ansible-playbook --syntax-check ./playbooks/init.yml`
 - `ansible-lint ./playbooks/init.yml`
 - `ansible-playbook -C ./playbooks/init.yml`
 - `ansible-playbook ./playbooks/init.yml`
@@ -192,11 +186,11 @@ all:
 
   hosts:
     alpha: # Intel Core i5-425 CPU 1.3 GHz, 16 GB RAM, 240 GB SSD
-      hostname: alpha.techcasitaproductions.com
+      hostname: alpha.wolfpaulus.com
       timezone: America/Denver
     
     beta:  # Intel Core i3-321 CPU, 1.8 GHz, 16 GB RAM, 128 GB SSD, Ubuntu 24.04.1 LTS
-      hostname: beta.techcasitaproductions.com      
+      hostname: beta.wolfpaulus.com      
 ```
 ### Playbooks
 
@@ -204,7 +198,7 @@ The _playbooks_ folder contains a few more _playbooks_ to perform essential task
 
 - Installing [Docker](https://www.docker.com) : ./playbooks/setup_docker.yml
 - Installing [Portainer](https://www.portainer.io) : ./playbooks/setup_portainer.yml
-- Installing [WatchTower](https://containrrr.dev/watchtower/) : ./playbooks/setup_watchtower.yml
+- Installing [WatchTower](https://watchtower.nickfedor.com/) : ./playbooks/setup_watchtower.yml
 
 **Docker** is an open-source platform designed to automate the deployment, scaling, and management of applications in lightweight, portable containers. Containers allow developers to package applications along with all their dependencies (libraries, configurations, and binaries), ensuring consistent behavior across different environments.
 
@@ -261,7 +255,7 @@ Watchtower is useful for automating updates in self-hosted environments, commonl
 #### One Playbook to play them all
 After experimenting with all the before mentioned playbooks and verifying that they all work, we can easily create a playbook the plays them all:
 
-##### ./paybooks/docker_all_in.yml
+##### ./playbooks/docker_all_in.yml
 
 ```yaml
 #
@@ -300,7 +294,7 @@ ansible-playbook ./playbooks/setup_dca.yml
 ```
 
 ## Limiting Ansible playbooks
-If a playbool is setup to run on all hosts, it can still be installed selectively, by creating a new inventory on the commandline. E.g.:
+If a playbook is setup to run on all hosts, it can still be installed selectively, by creating a new inventory on the commandline. E.g.:
 
 ```shell
 ansible-playbook ./playbooks/setup_dca.yml -i epsilon,
@@ -355,27 +349,18 @@ services: # This Docker Compose YAML deploys a MySQL database container.
 
 
 # Cloudflare
-Follow the fist couple of steps [here](https://wolfpaulus.com/flare) to create _Tunnel Certificate_, _Name_, _ID_, and _Secret_
-E.g.:
-
-```shell
-cloudflared tunnel login
-..
-cp /Users/wolf/.cloudflared/cert.pem ./playbooks/certificates/epsilon_tunnel.cert
-cloudflared tunnel create epsilon
-```
+Follow the fist couple of steps [here](https://wolfpaulus.com/flare) to create _Tunnel Name_, _ID_, and _Secret_
 
 After adding the following key/value pairs to in host inventory:
 ```yaml
 epsilon: 
-  domain: techcasitaproductions.com
+  domain: wolfpaulus.com
   hostname: epsilon.{{ domain }}
   architecture: arm64
   cloudflared_pkg: cloudflared-linux-arm64.deb
   tunnel_name: epsilon
   tunnel_id: XT3g...
   tunnel_secret: 66f9...
-  tunnel_cert: ./certificates/epsilon_tunnel.cert
 ```
 
 1. The *setup_cloudflare* playbook, is used to install cloudflared, tunnel credentials, and certificates on the hosts.
@@ -405,7 +390,7 @@ E.g., with cloudflared installed, I only need to add this to my `~/.ssh/config` 
 
 ```yaml
 Host ssh-epsilon
-    HostName ssh-epsilon.techcasitaproductions.com
+    HostName ssh-epsilon.wolfpaulus.com
     User wolf
     Port 11
     ProxyCommand cloudflared access ssh --hostname %h
@@ -427,7 +412,7 @@ Once again, I still find simply installing cloudflared on a client computer the 
 E.g.: running this command on a client computer:
 
 ```shell
-cloudflared access tcp -T mysql.techcasitaproductions.com -L 127.0.0.1:3306
+cloudflared access tcp -T mysql.wolfpaulus.com -L 127.0.0.1:3306
 ```
 
 allows you to connect to the remote MySQL server mapped to localhost.
