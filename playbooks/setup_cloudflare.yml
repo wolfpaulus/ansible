@@ -1,5 +1,5 @@
 # Description: This playbook installs cloudflared, tunnel credentials, and certificates on the hosts.
-# PLEASE NOTE: Before running this playbook, you need to have the following variables defined in your inventory file: 
+# PLEASE NOTE: Before running this playbook, you need to have the following variables defined in your inventory file:
 # account_tag, cloudflared_pkg, tunnel_cert, tunnel_name, tunnel_id, and tunnel_secret.
 # Credentials and certificates can easily be created on the `control host` and added to the playbooks/certificates folder for deployment. E.g.:
 # - brew install cloudflared
@@ -9,10 +9,10 @@
 # Check here for more details: https://wolfpaulus.com/flare
 # Since setup_cnams.yml requires that cloudflared is installed on the hosts, this playbook should be run before the setup_cnames.yml playbook.
 #
-# PLEASE NOTE: It's OK if the last step , starting the tunnel' originally fails because no ingress rules have been defined yet.
+# PLEASE NOTE: It's OK if the last step, starting the tunnel' originally fails because no ingress rules have been defined yet.
 
 - name: Install cloudflared
-  hosts: amd64, arm64 
+  hosts: beta
   become: true
   tasks:
     - name: Download the cloudflared Linux package
@@ -27,12 +27,6 @@
         mkdir -p /etc/cloudflared/
       register: result
       changed_when: result.rc != 0
-
-    - name: Copy the certificate file for cloudflared.
-      ansible.builtin.copy:
-        src: "{{ tunnel_cert }}"
-        dest: "/etc/cloudflared/cert.pem"
-        mode: "0440"
 
     - name: Create the credentials file for cloudflared.
       ansible.builtin.copy:

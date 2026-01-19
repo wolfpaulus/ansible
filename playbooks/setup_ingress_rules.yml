@@ -24,29 +24,32 @@
 #         name: cloudflared
 #         state: restarted
 
-# - name: Setup ingress rules for the beta tunnel.
-#   hosts: beta
-#   become: true
-#   tasks:
-#     - name: Create the config file for cloudflared and define the ingress rules for the beta tunnel
-#       ansible.builtin.copy:
-#         dest: "/etc/cloudflared/config.yml"
-#         content: |
-#           tunnel: {{ tunnel_id }}
-#           credentials-file: /etc/cloudflared/cred.json
-#           logfile: /var/log/cloudflared.log
-#           loglevel: warn
-#           ingress: # ingress rules for the tunnel
-#             - hostname: ssh-{{ hostname }}  # CNAME ssh-{hostname} needs to be configured in Cloudflare/DNS
-#               service: ssh://localhost:22   # must be proxied using cloudflared on the client
-#             - service: http_status:404
-#         mode: "0440"
+- name: Setup ingress rules for the beta tunnel.
+  hosts: beta
+  become: true
+  tasks:
+    - name: Create the config file for cloudflared and define the ingress rules for the beta tunnel
+      ansible.builtin.copy:
+        dest: "/etc/cloudflared/config.yml"
+        content: |
+          tunnel: {{ tunnel_id }}
+          credentials-file: /etc/cloudflared/cred.json
+          logfile: /var/log/cloudflared.log
+          loglevel: warn
+          ingress: # ingress rules for the tunnel
+            - hostname: dca.{{ domain }}
+              service: http://localhost:8000 # dollar cost avg server 8000 -> 443
+            - hostname: weather.{{ domain }}
+              service: http://localhost:8002 # wordgame server 8002 -> 443
+            - hostname: ssh-{{ hostname }}  # CNAME ssh-{hostname} needs to be configured in Cloudflare/DNS
+              service: ssh://localhost:22   # must be proxied using cloudflared on the client
+            - service: http_status:404
+        mode: "0440"
 
-#     - name: Start the tunnel.
-#       ansible.builtin.service:
-#         name: cloudflared
-#         state: restarted
-
+    - name: Start the tunnel.
+      ansible.builtin.service:
+        name: cloudflared
+        state: restarted
 # - name: Setup ingress rules for the apollo tunnel.
 #   hosts: apollo
 #   become: true
@@ -103,27 +106,25 @@
 #         name: cloudflared
 #         state: restarted
 
-- name: Setup ingress rules for the ares tunnel.
-  hosts: ares
-  become: true
-  tasks:
-    - name: Create the config file for cloudflared and define the ingress rules for the beta tunnel
-      ansible.builtin.copy:
-        dest: "/etc/cloudflared/config.yml"
-        content: |
-          tunnel: {{ tunnel_id }}
-          credentials-file: /etc/cloudflared/cred.json
-          logfile: /var/log/cloudflared.log
-          loglevel: warn
-          ingress: # ingress rules for the tunnel
-            - hostname: wordgame.{{ domain }}
-              service: http://localhost:8001 # wordgame server 8001 -> 443
-            - hostname: ssh-{{ hostname }}  
-              service: ssh://localhost:22    # must be proxied using cloudflared on the client
-            - service: http_status:404
-        mode: "0440"
+# - name: Setup ingress rules for the ares tunnel.
+#   hosts: ares
+#   become: true
+#   tasks:
+#     - name: Create the config file for cloudflared and define the ingress rules for the beta tunnel
+#       ansible.builtin.copy:
+#         dest: "/etc/cloudflared/config.yml"
+#         content: |
+#           tunnel: {{ tunnel_id }}
+#           credentials-file: /etc/cloudflared/cred.json
+#           logfile: /var/log/cloudflared.log
+#           loglevel: warn
+#           ingress: # ingress rules for the tunnel
+#             - hostname: wordgame.{{ domain }}
+#               service: http://localhost:8001 # wordgame server 8001 -> 443
+#             - service: http_status:404
+#         mode: "0440"
 
-    - name: Start the tunnel.
-      ansible.builtin.service:
-        name: cloudflared
-        state: restarted
+#     - name: Start the tunnel.
+#       ansible.builtin.service:
+#         name: cloudflared
+#         state: restarted
