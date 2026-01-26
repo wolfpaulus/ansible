@@ -1,6 +1,6 @@
 # Description: Install Watchtower to automatically update Docker containers
 - name: Install Watchtower
-  hosts: ares, beta
+  hosts: ares
   become: true
   vars:
     poll_interval: "600" # polling interval in seconds (10 minutes)
