@@ -1,0 +1,27 @@
+# Description: This playbook installs the retireetax application on the alpha host.
+- name: Install RetireeTax Application
+  hosts: alpha
+  become: true
+  tasks:
+    - name: Login to GHCR
+      community.docker.docker_login:
+        registry_url: ghcr.io
+        username: "{{ GHCR_username}}"
+        password: "{{ PAT_RetireeTax }}" 
+        reauthorize: yes
+
+    - name: Install public Docker Container from GitHub Container Registry
+      community.docker.docker_container:
+        name: retireetax
+        image: ghcr.io/wolfpaulus/retiree-tax:latest
+
+        labels:
+          com.centurylinklabs.watchtower.enable: "true"
+        state: started
+        restart_policy: unless-stopped
+        published_ports:
+          - "8001:8000" # host port : container port
+        volumes:
+          - /var/log:/var/log
+        env:
+          TZ: "{{ timezone }}"

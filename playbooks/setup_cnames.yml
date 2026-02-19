@@ -4,29 +4,31 @@
 # It's not a problem, if the CNAMES already exist or are already mapped to the tunnel IDs.
 # This playbook requires that cloudflared is installed on the hosts. So this playbook should be run after the setup_cloudflare.yml playbook.
 
-# - name: Setup CNAMES for the alpha tunnel.
-#   hosts: alpha
+- name: Setup CNAMES for the alpha tunnel.
+  hosts: alpha
+  become: true
+  tasks:
+    - name: Create CNAMES for the alpha tunnel. # put newest first
+      ansible.builtin.shell: |
+        cloudflared tunnel route dns "{{ tunnel_id }}" {{ domain2 }}
+        cloudflared tunnel route dns "{{ tunnel_id }}" ssh-{{ hostname.split('.')[0] }}.{{ domain2 }}
+        cloudflared tunnel route dns "{{ tunnel_id }}" {{ hostname.split('.')[0] }}.{{ domain2 }}
+      register: my_output
+      changed_when: my_output.rc != 0
+
+
+# - name: Setup CNAMES for the beta tunnel.
+#   hosts: beta
 #   become: true
 #   tasks:
-#     - name: Create CNAMES for the alpha tunnel. # put newest first
+#     - name: Create CNAMES for the beta tunnel. # put newest first
 #       ansible.builtin.shell: |
+#         cloudflared tunnel route dns "{{ tunnel_id }}" dca
+#         cloudflared tunnel route dns "{{ tunnel_id }}" weather
 #         cloudflared tunnel route dns "{{ tunnel_id }}" ssh-{{ hostname.split('.')[0] }}
 #         cloudflared tunnel route dns "{{ tunnel_id }}" {{ hostname.split('.')[0] }}
 #       register: my_output
 #       changed_when: my_output.rc != 0
-
-- name: Setup CNAMES for the beta tunnel.
-  hosts: beta
-  become: true
-  tasks:
-    - name: Create CNAMES for the beta tunnel. # put newest first
-      ansible.builtin.shell: |
-        cloudflared tunnel route dns "{{ tunnel_id }}" dca
-        cloudflared tunnel route dns "{{ tunnel_id }}" weather
-        cloudflared tunnel route dns "{{ tunnel_id }}" ssh-{{ hostname.split('.')[0] }}
-        cloudflared tunnel route dns "{{ tunnel_id }}" {{ hostname.split('.')[0] }}
-      register: my_output
-      changed_when: my_output.rc != 0
 
 # - name: Setup CNAMES for the apollo tunnel.
 #   hosts: apollo

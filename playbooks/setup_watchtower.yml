@@ -1,6 +1,6 @@
 # Description: Install Watchtower to automatically update Docker containers
 - name: Install Watchtower
-  hosts: ares
+  hosts: alpha
   become: true
   vars:
     poll_interval: "600" # polling interval in seconds (10 minutes)
@@ -16,6 +16,7 @@
         restart_policy: unless-stopped
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
+          - /home/wolf/.docker/config.json:/config.json
         env:
           TZ: "{{ timezone }}"
           WATCHTOWER_POLL_INTERVAL: "{{ poll_interval }}" # polling interval in seconds

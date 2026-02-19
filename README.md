@@ -282,9 +282,42 @@ Running this playbook will
 
 on all hosts in the _hosts.yml_ file, and doing so in very little time.
 
-```shell
-ansible-playbook ./playbooks/docker_all_in.yml
+## Private Registries and Watchtower
+This still needs some work. I'm using GHCR. If a repo is private, so is the container image. To pull a private image, you need to authenticate with the registry. This can be done by creating a `config.json` file with the necessary credentials and mounting it into the Watchtower container. The `config.json` file should contain the authentication details for your private registry.
+
+Not totally automized but here is the quick and dirty way to do it:
+After creating a PAT on GitHub, yes I store it in my host.yml file.
+And after setting up the host with the docker_all_in.yml playbook, I can create the config.json file on the target host.
+ssh into the target host and run the following command with the following content:
+`docker login ghcr.io -u USERNAME_HERE --password-stdin`
+
+This will create a config.json file in the ~/.docker directory on the target host, which contains the necessary authentication details for pulling images from the private registry. It will look something like this:
+
+
+```json
+{
+  "auths": {
+    "ghcr.io": {
+      "auth": "..."}}}
 ```
+... all nicely base64 encoded. Now we can mount this file into the Watchtower container, allowing it to pull private images from GHCR.
+
+```yaml
+  tasks:
+    - name: Install Watchtower
+      community.docker.docker_container:
+        name: watchtower
+        image: nickfedor/watchtower:latest
+        labels:
+          com.centurylinklabs.watchtower.enable: "true"
+        state: started
+        restart_policy: unless-stopped
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - /home/wolf/.docker/config.json:/config.json
+```
+
+
 ### DCA
 Here is another playbook: _setup_dca.yml_. This is a demo app that I install on some hosts found in the hosts.yml file.  
 _DCA_ short for _Dollar Cost Average_ is a Github repo that comes with a pre-built docker image. This particular docker image is also a multi-platform image, built for the amd64 and arm64/v8 platforms. I.e., it can easly be deployed on "standard" X86 and Raspberry Pi 5 hardware.
@@ -301,6 +334,23 @@ ansible-playbook ./playbooks/setup_dca.yml -i epsilon,
 ```
 
 This would run the setup_dca.yml playbook on the epsilon host. __Notice the comma at the end!__ The inventory needs to be a list.
+
+## Pulling a Docker Image from a Private Registry
+If you want to pull a Docker image from a private registry, you can use the `community.docker.docker_login` module to authenticate with the registry before pulling the image. Here is an example playbook: 
+[setup_app_retireetax.yml](./playbooks/setup_app_retireetax.yml)
+
+
+### PAT
+A Personal Access Token (PAT) is a secure way to authenticate with a service, such as GitHub, without using your password. It is a string of characters that grants specific permissions to access resources on the platform. PATs are often used for automation, scripting, and API access, allowing you to perform actions on behalf of your account without exposing your password.
+1. To create a PAT for GitHub, follow these steps:
+2. Log in to your GitHub account.
+3. Go to your profile settings. (Not the repository settings, but your account settings)
+4. Navigate to your GitHub Developer settings. (Bottom left corner)
+5. Select Personal access tokens > Tokens (classic) > Generate new token (classic).
+6. Give the token a descriptive note and set an expiration.
+7. Specify the required permissions (scopes): select the read:packages scope (and read:org if the image belongs to an organization).
+8. Click Generate token and copy the token immediately; you will not be able to see it again
+
 
 ## Ansible Docker Container vs Docker Compose
 *community.docker.docker_container vs community.docker.docker_compose_v2*
@@ -351,17 +401,36 @@ services: # This Docker Compose YAML deploys a MySQL database container.
 # Cloudflare
 Follow the fist couple of steps [here](https://wolfpaulus.com/flare) to create _Tunnel Name_, _ID_, and _Secret_
 
-After adding the following key/value pairs to in host inventory:
+E.g.: .. on the iMac
+- brew install cloudflared
+- rm -rf ~/.cloudflared
+- cloudflared tunnel login (selecting the retireetax.com domain)
+- cloudflared tunnel create alpha (naming the tunnel after the hostname)
+
+Now we have: 
+- ~/.cloudflared/cert.pem which goes into ./certs/alpha.pem
+- and from ~/.cloudflared/{tunnel_id}.json. we store the tunnel_id and tunnel_secret in the host inventory.
+
+Running the setup_cloudflare playbook will install cloudflared, end put files into /etc/cloudflared. The tunnel will not start until the cnames and ingress rules are setup.
+...
+
+
 ```yaml
-epsilon: 
-  domain: wolfpaulus.com
-  hostname: epsilon.{{ domain }}
-  architecture: arm64
-  cloudflared_pkg: cloudflared-linux-arm64.deb
-  tunnel_name: epsilon
-  tunnel_id: XT3g...
-  tunnel_secret: 66f9...
+alpha: 
+  domain: 
+  hostname: 
+  architecture: 
+  cloudflared_pkg: cloudflared-linux-..
+  tunnel_name: alpha
+  tunnel_id: ...tunnel_id...
+  tunnel_secret: ...tunnel_secret...
 ```
+we can run the following playbook:
+setup_cloudflare.yml
+There is no route setup to the tunnel will not start.
+
+
+```shellansible
 
 1. The *setup_cloudflare* playbook, is used to install cloudflared, tunnel credentials, and certificates on the hosts.
 2. The *setup_cnames* playbook is used to create the cnames on Cloudflare and connect the cname to a tunnel.

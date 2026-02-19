@@ -7,3 +7,5 @@
 *.cert
 hosts.yml
 facts.json
+/certs/
+*.pem

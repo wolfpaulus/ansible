@@ -1,6 +1,6 @@
 # Description: This playbook is used to install docker and docker-compose on the target machine.
 - name: Install docker
-  hosts: beta
+  hosts: alpha
   become: true
   vars:
     packages:

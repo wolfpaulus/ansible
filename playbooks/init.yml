@@ -1,6 +1,6 @@
 # Description: Set timezone on all hosts and basic system configuration
 - name: Set timezone
-  hosts: amd64, arm64
+  hosts: alpha
   become: true
   tasks:
     - name: Set tz

@@ -12,7 +12,7 @@
 # PLEASE NOTE: It's OK if the last step, starting the tunnel' originally fails because no ingress rules have been defined yet.
 
 - name: Install cloudflared
-  hosts: beta
+  hosts: alpha
   become: true
   tasks:
     - name: Download the cloudflared Linux package
@@ -38,6 +38,12 @@
             "TunnelName"   : "{{ tunnel_name | quote }}",
             "TunnelSecret" : "{{ tunnel_secret | quote }}"
           }
+        mode: "0440"
+
+    - name: Copy the certificate file for cloudflared.
+      ansible.builtin.copy:
+        src: "../certs/{{ tunnel_name }}.pem"
+        dest: "/etc/cloudflared/cert.pem"
         mode: "0440"
 
     - name: Install the tunnel as a systemd service.
