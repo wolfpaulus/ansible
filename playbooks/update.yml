@@ -3,7 +3,7 @@
 # It will update the package list, upgrade all packages, and reboot if necessary
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html
 - name: Upgrade Debian servers
-  hosts: alpha
+  hosts: orion, alpha, beta, ares, artemis
   become: true
   tasks:
     - name: Perform a dist-upgrade.

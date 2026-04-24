@@ -1,6 +1,6 @@
 # Description: Set timezone on all hosts and basic system configuration
 - name: Set timezone
-  hosts: alpha
+  hosts: alpha,beta,ares,artemis
   become: true
   tasks:
     - name: Set tz
