@@ -1,15 +1,16 @@
 # Description: Install Watchtower to automatically update Docker containers
 - name: Install Watchtower
-  hosts: alpha
+  hosts: m6
   become: true
   vars:
     poll_interval: "600" # polling interval in seconds (10 minutes)
-    
+
   tasks:
     - name: Install Watchtower
       community.docker.docker_container:
         name: watchtower
         image: nickfedor/watchtower:latest
+        docker_host: "{{ docker_host }}"
         labels:
           com.centurylinklabs.watchtower.enable: "true"
         state: started

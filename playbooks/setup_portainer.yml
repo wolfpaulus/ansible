@@ -1,12 +1,13 @@
 # Description: This playbook is used to install Portainer on the target host.
 - name: Install Portainer
-  hosts: alpha
+  hosts: m6
   become: true
   tasks:
     - name: Install Portainer
       community.docker.docker_container:
         name: portainer
         image: portainer/portainer-ce
+        docker_host: "{{ docker_host }}"
         labels:
           com.centurylinklabs.watchtower.enable: "true"
         state: started
