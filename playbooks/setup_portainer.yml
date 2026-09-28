@@ -1,7 +1,7 @@
 # Description: This playbook is used to install Portainer on the target host.
 - name: Install Portainer
   hosts: m6
-  become: true
+  become: "{{ ansible_become }}"
   tasks:
     - name: Install Portainer
       community.docker.docker_container:
@@ -16,6 +16,4 @@
           - "9000:9000"
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
-          - /portainer_data:/data
-          - /etc/localtime:/etc/localtime:ro
-          - /etc/timezone:/etc/timezone:ro
+          - portainer_data:/data

@@ -7,27 +7,14 @@
 # - cp /Users/wolf/.cloudflared/cert.pem ./playbooks/certificates/gamma_tunnel.cert
 # - cloudflared tunnel create gamma
 # Check here for more details: https://wolfpaulus.com/flare
-# Since setup_cnams.yml requires that cloudflared is installed on the hosts, this playbook should be run before the setup_cnames.yml playbook.
+# Since setup_cnames.yml requires that cloudflared is installed on the hosts, this playbook should be run before the setup_cnames.yml playbook.
 #
 # PLEASE NOTE: It's OK if the last step, starting the tunnel' originally fails because no ingress rules have been defined yet.
 
 - name: Install cloudflared
-  hosts: alpha
-  become: true
+  hosts: alpha,beta
+  become: "{{ ansible_become }}"
   tasks:
-    - name: Download the cloudflared Linux package
-      ansible.builtin.get_url:
-        url: https://github.com/cloudflare/cloudflared/releases/latest/download/{{ cloudflared_pkg }}
-        dest: /tmp/{{ cloudflared_pkg }}
-        mode: "0440"
-
-    - name: Depackage cloudflared
-      ansible.builtin.shell: |
-        sudo dpkg -i /tmp/{{ cloudflared_pkg }}
-        mkdir -p /etc/cloudflared/
-      register: result
-      changed_when: result.rc != 0
-
     - name: Create the credentials file for cloudflared.
       ansible.builtin.copy:
         dest: "/etc/cloudflared/cred.json"
@@ -40,7 +27,7 @@
           }
         mode: "0440"
 
-    - name: Copy the certificate file for cloudflared.
+    - name: Copy the certificate file for cloudflared
       ansible.builtin.copy:
         src: "../certs/{{ tunnel_name }}.pem"
         dest: "/etc/cloudflared/cert.pem"
@@ -58,14 +45,14 @@
           ansible.builtin.debug:
             msg: "service installation failed, already installed?"
 
-    - name: Increase the maximum receive buffer size.
+    - name: Debian - increase maximum receive buffer size
       ansible.posix.sysctl:
         name: net.core.rmem_max
         value: 2500000
         state: present
         reload: true
 
-    - name: Start the tunnel.
+    - name: Debian - restart cloudflared
       ansible.builtin.service:
         name: cloudflared
         state: restarted

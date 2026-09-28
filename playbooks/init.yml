@@ -1,7 +1,7 @@
 # Description: Set timezone on all hosts and basic system configuration
 - name: Set timezone
-  hosts: alpha,beta,ares,artemis
-  become: true
+  hosts: alpha,beta
+  become: "{{ ansible_become }}"
   tasks:
     - name: Set tz
       community.general.timezone:
@@ -15,6 +15,7 @@
           - avahi-daemon
           - avahi-discover
           - libnss-mdns
+          - cloudflared
         state: present
         update_cache: true
 

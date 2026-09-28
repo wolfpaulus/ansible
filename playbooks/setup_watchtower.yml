@@ -1,7 +1,7 @@
 # Description: Install Watchtower to automatically update Docker containers
 - name: Install Watchtower
   hosts: m6
-  become: true
+  become: "{{ ansible_become }}"
   vars:
     poll_interval: "600" # polling interval in seconds (10 minutes)
 
@@ -17,7 +17,7 @@
         restart_policy: unless-stopped
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
-          - /home/wolf/.docker/config.json:/config.json
+          - "{{ docker_config_path }}:/config.json:ro"
         env:
           TZ: "{{ timezone }}"
           WATCHTOWER_POLL_INTERVAL: "{{ poll_interval }}" # polling interval in seconds
