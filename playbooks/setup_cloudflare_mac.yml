@@ -1,0 +1,61 @@
+# Description: This playbook is specifically for macOS hosts and installs tunnel credentials, and certificates
+# on the ansible hosts in the ansible users ~/.cloudflared directory.
+# PLEASE NOTE: Before running this playbook, you need to have the following variables defined in your inventory file:
+# account_tag, cloudflared_pkg, tunnel_cert, tunnel_name, tunnel_id, and tunnel_secret.
+# I.e., you have already created the Tunnel most likely on your developer workstation.
+# Check here for more details: https://wolfpaulus.com/flare
+# One more important pre-requisite is that the ansible user on the macOS hosts has already installed cloudflared using brew install cloudflared.
+
+- name: Setup cloudflared on macOS
+  hosts: m6
+  tasks:
+    - name: Create cloudflared directory
+      ansible.builtin.file:
+        path: /Users/{{ ansible_user }}/.cloudflared
+        state: directory
+
+    - name: Copy plist file for cloudflared
+      ansible.builtin.template:
+        src: "../plists/cloudflared.plist"
+        dest: "/Users/{{ ansible_user }}/Library/LaunchAgents/com.cloudflare.cloudflared.plist"
+
+    - name: Copy the certificate file for cloudflared
+      ansible.builtin.copy:
+        src: "../certs/{{ tunnel_name }}.pem"
+        dest: "/Users/{{ ansible_user }}/.cloudflared/cert.pem"
+
+    - name: Create the credentials file for cloudflared
+      ansible.builtin.copy:
+        dest: /Users/{{ ansible_user }}/.cloudflared/cred.json
+        content: |
+          {
+            "AccountTag"   : "{{ account_tag | quote }}",
+            "TunnelID"     : "{{ tunnel_id | quote }}",
+            "TunnelName"   : "{{ tunnel_name | quote }}",
+            "TunnelSecret" : "{{ tunnel_secret | quote }}"
+          }
+        mode: "0440"
+
+    - name: Create the config file for cloudflared and define the ingress rules for the alpha tunnel
+      ansible.builtin.copy:
+        dest: "/Users/{{ ansible_user }}/.cloudflared/config.yml"
+        content: |
+          tunnel: {{ tunnel_id }}
+          credentials-file: /Users/{{ ansible_user }}/.cloudflared/cred.json
+          logfile: /Users/{{ ansible_user }}/.cloudflared/cloudflared.log
+          loglevel: warn
+          ingress: # ingress rules for the tunnel
+            - hostname: rtx27.retireetax.com
+              service: http://localhost:8001 # retireetax server 8001 -> 443
+            - hostname: ssh-{{ hostname }}  # CNAME ssh-{hostname} needs to be configured in Cloudflare/DNS
+              service: ssh://localhost:22   # must be proxied using cloudflared on the client
+            - service: http_status:404
+        mode: "0440"
+
+    - name: Load the cloudflared plist
+      ansible.builtin.command:
+        cmd: launchctl load -w /Users/{{ ansible_user }}/Library/LaunchAgents/com.cloudflare.cloudflared.plist
+
+    - name: Start the cloudflared service
+      ansible.builtin.command:
+        cmd: launchctl start com.cloudflare.cloudflared
