@@ -6,12 +6,14 @@
     - name: Install Portainer
       community.docker.docker_container:
         name: portainer
-        image: portainer/portainer-ce
+        image: portainer/portainer-ce:lts
         docker_host: "{{ docker_host }}"
         labels:
           com.centurylinklabs.watchtower.enable: "true"
         state: started
         restart_policy: unless-stopped
+        command:
+          - --no-setup-token
         published_ports:
           - "9000:9000"
         volumes:
