@@ -6,7 +6,7 @@
     - name: Login to GHCR
       community.docker.docker_login:
         registry_url: ghcr.io
-        username: "{{ GHCR_username}}"
+        username: "{{ GHCR_username }}"
         password: "{{ PAT_RetireeTax }}"
         reauthorize: yes
       environment:

@@ -18,7 +18,7 @@ fi
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Packages
-brew install wget git python colima docker docker-compose docker-buildx cloudflared
+brew install wget git python colima docker docker-compose docker-buildx cloudflared lazydocker omlahore/tap/removemacai
 
 # Git defaults
 git config --global init.defaultBranch main
@@ -34,13 +34,14 @@ ln -sfn "$(brew --prefix)/opt/docker-buildx/bin/docker-buildx" \
 
 colima start \
   --cpu 6 \
-  --memory 8 \
+  --memory 12 \
   --disk 100 \
   --arch aarch64 \
   --runtime docker \
   --vm-type vz \
   --mount-type virtiofs \
   --mount-inotify \
+  --nested-virtualization \
   --dns 1.1.1.1 \
   --dns 1.0.0.1
 
