@@ -1,6 +1,6 @@
 # Description: Set timezone on all hosts and basic system configuration
 - name: Set timezone
-  hosts: alpha,beta
+  hosts: alpha
   become: "{{ ansible_become }}"
   tasks:
     - name: Set tz
@@ -15,7 +15,6 @@
           - avahi-daemon
           - avahi-discover
           - libnss-mdns
-          - cloudflared
         state: present
         update_cache: true
 
@@ -24,3 +23,8 @@
         name: avahi-daemon
         enabled: true
         state: started
+
+    - name: Download the cloudflared Linux package.
+      shell: wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+    - name: Depackage cloudflared.
+      shell: sudo dpkg -i cloudflared-linux-amd64.deb
